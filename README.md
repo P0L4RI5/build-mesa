@@ -58,6 +58,14 @@ available using regular MFT encoder enumeration. Alternatively use [DllGetClassO
 create [IClassFactory][] object that provides [IClassFactory::CreateInstance][] method to create MFT encoder COM
 object explicitly. For CLSID guids for encoders see [this file][mft-guids].
 
+# Using D3D12 for OpenGL/d3d12 or Vulkan/dzn, or MFT
+
+To use D3D12 implementation you might need to get newer `D3D12Core.dll` file and distribute it next to your .exe file.
+It is available as part of [DirectX 12 Agility SDK][d3d12-agility-sdk]. Download it from
+[DirectX 12 Agility SDK Downloads][d3d12-agility-download] - click on latest version, then `Download package` on right
+side. Unzip downloaded .nupkg file, and you'll find it in `build/native/bin/x64` folder. For 32-bit binary use `win32`
+folder, and for 64-bit arm use `arm64` folder.
+
 # Building locally
 
 First make sure you have installed all necessary depenendencies:
@@ -111,3 +119,5 @@ Output files will be placed in `mesa-[name]-[arch]` folders.
 [IClassFactory]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nn-unknwn-iclassfactory
 [IClassFactory::CreateInstance]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iclassfactory-createinstance
 [mft-guids]: https://gitlab.freedesktop.org/mesa/mesa/-/blob/mesa-25.3.0/src/gallium/targets/mediafoundation/dllmain.cpp?ref_type=tags#L35-45
+[d3d12-agility-sdk]: https://devblogs.microsoft.com/directx/announcing-dx12agility/
+[d3d12-agility-download]: https://devblogs.microsoft.com/directx/directx12agility/
