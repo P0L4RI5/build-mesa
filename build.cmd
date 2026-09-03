@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set MESA_VERSION=26.2.1
-set MESA_SHA256=c47e81bddc4760360a41ac3c5acec38acb81f9d750ecef47e7f3adc7021a4442
+set MESA_VERSION=26.2.2
+set MESA_SHA256=eeb29ca7e56cfaa8e8a79538dcf834e3b18e501c31bef5145e959ea437cc4216
 
 set LLVM_VERSION=23.1.0
 set LLVM_SHA256=ab1f0e3ec52448c33e8782eaf0422504b87c7b016b22514653ee0d8fcee479ff
