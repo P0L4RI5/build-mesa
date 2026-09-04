@@ -231,7 +231,11 @@ rem *** download mesa source ***
 
 rd /s /q mesa-%MESA_VERSION% 1>nul 2>nul
 
-call :get "https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz" "mesa-%MESA_VERSION%" "%MESA_SHA256%" || exit /b 1
+git.exe clone --depth 1 https://gitlab.freedesktop.org/mesa/mesa.git "mesa-%MESA_VERSION%" || exit /b 1
+curl.exe -sfLO https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/37115.patch       || exit /b 1
+
+git.exe apply --directory=mesa-%MESA_VERSION% 37115.patch                             || exit /b 1
+git.exe apply --directory=mesa-%MESA_VERSION% patches/moltenvk.patch                  || exit /b 1
 
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-use-tex-cache.patch     || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-static-build.patch      || exit /b 1
@@ -263,32 +267,6 @@ meson.exe setup ^
   %MESON_CROSS% || exit /b 1
 ninja.exe -C mesa-build-%MESA_ARCH% install || exit /b 1
 python.exe mesa-%MESA_VERSION%\src\vulkan\util\vk_icd_gen.py --api-version 1.4 --xml mesa-%MESA_VERSION%\src\vulkan\registry\vk.xml --icd-lib-path . --icd-filename vulkan_lvp.dll --use-backslash --out mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.%TARGET_ARCH_NAME%.json || exit /b 1
-
-rem *** d3d12, dzn ***
-
-rd /s /q mesa-build-%MESA_ARCH% 1>nul 2>nul
-meson.exe setup ^
-  mesa-build-%MESA_ARCH% ^
-  mesa-%MESA_VERSION% ^
-  --prefix="%CD%\mesa-d3d12-%MESA_ARCH%" ^
-  --default-library=static ^
-  -Dbuildtype=release ^
-  -Db_ndebug=true ^
-  -Db_vscrt=mt ^
-  -Dc_args="-wd4189 -wd4319" ^
-  -Dllvm=disabled ^
-  -Dplatforms=windows ^
-  -Dvideo-codecs=all ^
-  -Dmediafoundation-codecs=all ^
-  -Dgallium-mediafoundation=enabled ^
-  -Dgallium-drivers=d3d12 ^
-  -Dvulkan-drivers=microsoft-experimental ^
-  -Degl=enabled ^
-  -Dgles1=enabled ^
-  -Dgles2=enabled ^
-  %MESON_CROSS% || exit /b 1
-ninja.exe -C mesa-build-%MESA_ARCH% install || exit /b 1
-python.exe mesa-%MESA_VERSION%\src\vulkan\util\vk_icd_gen.py --api-version 1.1 --xml mesa-%MESA_VERSION%\src\vulkan\registry\vk.xml --icd-lib-path . --icd-filename vulkan_dzn.dll --use-backslash --out mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.%TARGET_ARCH_NAME%.json || exit /b 1
 
 rem *** zink ***
 
@@ -336,18 +314,6 @@ if "%GITHUB_WORKFLOW%" neq "" (
   %SZIP% a -mx=9 -mqs=on ..\mesa-lavapipe-%MESA_ARCH%-%MESA_VERSION%.7z      || exit /b 1
   popd
 
-  mkdir archive-d3d12-%MESA_ARCH%
-  pushd archive-d3d12-%MESA_ARCH%
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\opengl32.dll     .           || exit /b 1
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\libEGL.dll       .           || exit /b 1
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\lib\libEGL.lib       .           || exit /b 1
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\libGLESv1_CM.dll .           || exit /b 1
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\lib\libGLESv1_CM.lib .           || exit /b 1
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\libGLESv2.dll    .           || exit /b 1
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\lib\libGLESv2.lib    .           || exit /b 1
-  %SZIP% a -mx=9 -mqs=on ..\mesa-d3d12-%MESA_ARCH%-%MESA_VERSION%.7z || exit /b 1
-  popd
-
   mkdir archive-zink-%MESA_ARCH%
   pushd archive-zink-%MESA_ARCH%
   copy /y ..\mesa-zink-%MESA_ARCH%\bin\opengl32.dll     .           || exit /b 1
@@ -358,21 +324,6 @@ if "%GITHUB_WORKFLOW%" neq "" (
   copy /y ..\mesa-zink-%MESA_ARCH%\bin\libGLESv2.dll    .           || exit /b 1
   copy /y ..\mesa-zink-%MESA_ARCH%\lib\libGLESv2.lib    .           || exit /b 1
   %SZIP% a -mx=9 -mqs=on ..\mesa-zink-%MESA_ARCH%-%MESA_VERSION%.7z || exit /b 1
-  popd
-
-  mkdir archive-dzn-%MESA_ARCH%
-  pushd archive-dzn-%MESA_ARCH%
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\vulkan_dzn.dll                  . || exit /b 1
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.%TARGET_ARCH_NAME%.json . || exit /b 1
-  %SZIP% a -mx=9 -mqs=on ..\mesa-dzn-%MESA_ARCH%-%MESA_VERSION%.7z        || exit /b 1
-  popd
-
-  mkdir archive-mft-%MESA_ARCH%
-  pushd archive-mft-%MESA_ARCH%
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\msh264enchmft.dll          . || exit /b 1
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\msh265enchmft.dll          . || exit /b 1
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\msav1enchmft.dll           . || exit /b 1
-  %SZIP% a -mx=9 -mqs=on ..\mesa-mft-%MESA_ARCH%-%MESA_VERSION%.7z   || exit /b 1
   popd
 
   echo MESA_VERSION=%MESA_VERSION%>>"%GITHUB_OUTPUT%"
