@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set MESA_VERSION=26.2.2
-set MESA_SHA256=eeb29ca7e56cfaa8e8a79538dcf834e3b18e501c31bef5145e959ea437cc4216
+set MESA_VERSION=26.2.3
+set MESA_SHA256=1628058a8d2c0615975de5a15ab7bbb9638c50000b5bed9456ff423ea034a81f
 
 set LLVM_VERSION=23.1.1
 set LLVM_SHA256=ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6
@@ -236,6 +236,7 @@ call :get "https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz" "mesa-%MESA_VE
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-use-tex-cache.patch     || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-static-build.patch      || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/dxil-hash.patch                 || exit /b 1
+git.exe apply --directory=mesa-%MESA_VERSION% patches/mesa-26.2.3.patch               || exit /b 1
 
 mkdir mesa-%MESA_VERSION%\subprojects\llvm                                   1>nul || exit /b 1
 copy meson\meson.llvm.build mesa-%MESA_VERSION%\subprojects\llvm\meson.build 1>nul || exit /b 1
